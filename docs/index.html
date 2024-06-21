@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flutschi's Wirtschaftsabenteuer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        #game-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        #game-area {
+            margin-top: 20px;
+        }
+        #decision-area, #explanation-area {
+            margin-top: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #chart-container, #profit-container {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+            display: none;
+        }
+        #score-display {
+            text-align: right;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .animated {
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Flutschi's Wirtschaftsabenteuer 💼</h1>
+        <div id="score-display">Punktzahl: <span id="score">0</span></div>
+        <div id="game-area">
+            <div id="intro">
+                <!-- Einführung wird hier dynamisch eingefügt -->
+            </div>
+            <div id="chart-container">
+                <canvas id="marketShareChart"></canvas>
+            </div>
+            <div id="profit-container">
+                <canvas id="profitChart"></canvas>
+            </div>
+            <div id="decision-area">
+                <!-- Entscheidungsoptionen werden hier dynamisch eingefügt -->
+            </div>
+            <div id="explanation-area">
+                <!-- Erklärungen werden hier dynamisch eingefügt -->
+            </div>
+        </div>
+        <button id="next-round" style="display: none;">Nächste Runde ➡️</button>
+        <button id="restart" style="display: none;">Spiel wiederholen 🔄</button>
+    </div>
+
+    <script>
+        // Spielvariablen
+        let currentRound = 0;
+        let score = 0;
+        let highScore = localStorage.getItem('highScore') || 0;
+        let flutschisMarketShare = 50;
+        let bradasMarketShare = 50;
+        let flutschisProfit = 1000; // Startgewinn in Millionen Euro
+        let chart, profitChart;
+        let profitHistory = [1000];
+        let marketShareHistory = [50];
+
+        // Spielszenarien
+        const scenarios = [
+            {
+                description: "Eine große Flutwelle hat die Fabriken in China überschwemmt, was zu einer Verknappung der Ledertaschen führt. Was sollen wir tun? 🌊",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: -2, profit: 100 }, correct: true },
+                    { text: "Preise senken", effect: { marketShare: 5, profit: -100 }, correct: false },
+                    { text: "Produktionsmenge erhöhen", effect: { marketShare: 3, profit: -50 }, correct: false }
+                ],
+                explanation: {
+                    correct: "Richtig! 👍 Bei Verknappung des Angebots ist es sinnvoll, die Preise zu erhöhen. Dies maximiert den Gewinn bei reduzierter Verfügbarkeit, auch wenn es kurzfristig den Marktanteil senken kann.",
+                    wrong: "Leider falsch. 👎 Bei Verknappung des Angebots wäre es klüger gewesen, die Preise zu erhöhen. Dies hätte den Gewinn maximiert, auch wenn es kurzfristig den Marktanteil gesenkt hätte."
+                }
+            },
+            {
+                description: "Ein berühmter Influencer hat unsere Tasche in einem viralen Video getragen. Die Nachfrage steigt rasant. Wie reagieren wir? 🌟",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: 2, profit: 200 }, correct: true },
+                    { text: "Preise senken", effect: { marketShare: 7, profit: -150 }, correct: false },
+                    { text: "Produktionsmenge senken", effect: { marketShare: -5, profit: 50 }, correct: false }
+                ],
+                explanation: {
+                    correct: "Richtig! 👍 Bei steigender Nachfrage können wir die Preise erhöhen, um den Gewinn zu maximieren, ohne den Marktanteil zu gefährden.",
+                    wrong: "Leider falsch. 👎 Bei stark steigender Nachfrage wäre es klüger gewesen, die Preise zu erhöhen. Dies hätte den Gewinn maximiert, ohne den Marktanteil zu gefährden."
+                }
+            },
+            {
+                description: "Die Rohstoffpreise für Leder sind stark gestiegen. Wie gehen wir damit um? 📈",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: -3, profit: 50 }, correct: true },
+                    { text: "Preise senken", effect: { marketShare: 5, profit: -200 }, correct: false },
+                    { text: "Produktionsmenge erhöhen", effect: { marketShare: 2, profit: -100 }, correct: false }
+                ],
+                explanation: {
+                    correct: "Richtig! 👍 Bei steigenden Rohstoffpreisen müssen wir die Preise erhöhen, um unsere Gewinnmarge zu erhalten, auch wenn dies den Marktanteil leicht reduzieren kann.",
+                    wrong: "Leider falsch. 👎 Bei steigenden Rohstoffpreisen wäre es klüger gewesen, die Preise zu erhöhen. Dies hätte die Gewinnmarge erhalten, auch wenn es den Marktanteil leicht reduziert hätte."
+                }
+            },
+            {
+                description: "Eine neue Umweltregulierung erschwert die Produktion. Was ist unsere Strategie? 🌿",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: -2, profit: 30 }, correct: true },
+                    { text: "Preise senken", effect: { marketShare: 3, profit: -100 }, correct: false },
+                    { text: "Produktionsmenge erhöhen", effect: { marketShare: 1, profit: -150 }, correct: false }
+                ],
+                explanation: {
+                    correct: "Richtig! 👍 Neue Regulierungen erhöhen oft die Produktionskosten. Eine Preiserhöhung hilft, diese zusätzlichen Kosten zu decken, auch wenn es den Marktanteil leicht reduzieren kann.",
+                    wrong: "Leider falsch. 👎 Neue Regulierungen erhöhen oft die Produktionskosten. Eine Preiserhöhung wäre nötig gewesen, um diese zusätzlichen Kosten zu decken, auch wenn es den Marktanteil leicht reduziert hätte."
+                }
+            },
+            {
+                description: "Ein neuer Markt in Südamerika öffnet sich. Wie reagieren wir? 🌎",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: -5, profit: 50 }, correct: false },
+                    { text: "Preise senken", effect: { marketShare: 7, profit: -50 }, correct: true },
+                    { text: "Produktionsmenge senken", effect: { marketShare: -3, profit: 20 }, correct: false }
+                ],
+                explanation: {
+                    correct: "Richtig! 👍 Um in einen neuen Markt einzudringen, kann eine Strategie der niedrigeren Preise helfen, schnell Marktanteile zu gewinnen, auch wenn dies kurzfristig den Gewinn reduziert.",
+                    wrong: "Leider falsch. 👎 Um in einen neuen Markt einzudringen, wäre eine Strategie der niedrigeren Preise besser gewesen. Dies hätte geholfen, schnell Marktanteile zu gewinnen, auch wenn es kurzfristig den Gewinn reduziert hätte."
+                }
+            },
+            {
+                description: "Eine Wirtschaftskrise trifft den Luxusgütermarkt. Was ist unser Plan? 📉",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: -7, profit: -50 }, correct: false },
+                    { text: "Preise senken", effect: { marketShare: 5, profit: -100 }, correct: true },
+                    { text: "Produktionsmenge erhöhen", effect: { marketShare: -2, profit: -200 }, correct: false }
+                ],
+                explanation: {
+                    correct: "Richtig! 👍 In einer Wirtschaftskrise sinkt die Nachfrage nach Luxusgütern. Preissenkungen können helfen, Kunden zu halten und neue zu gewinnen, auch wenn dies den Gewinn kurzfristig reduziert.",
+                    wrong: "Leider falsch. 👎 In einer Wirtschaftskrise sinkt die Nachfrage nach Luxusgütern. Preissenkungen wären nötig gewesen, um Kunden zu halten und neue zu gewinnen, auch wenn dies den Gewinn kurzfristig reduziert hätte."
+                }
+            },
+            {
+                description: "Ein Trend zu nachhaltiger Mode zeichnet sich ab. Wie positionieren wir uns? 🌱",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: 3, profit: 100 }, correct: true },
+                    { text: "Preise senken", effect: { marketShare: 5, profit: -100 }, correct: false },
+                    { text: "Produktionsmenge senken", effect: { marketShare: -5, profit: 50 }, correct: false }
+                ],
+                explanation: {
+                    correct: "Richtig! 👍 Nachhaltige Produkte rechtfertigen oft höhere Preise. Kunden sind bereit, mehr für umweltfreundliche Produkte zu zahlen, was sowohl den Gewinn als auch den Marktanteil steigern kann.",
+                    wrong: "Leider falsch. 👎 Nachhaltige Produkte rechtfertigen oft höhere Preise. Kunden wären bereit gewesen, mehr für umweltfreundliche Produkte zu zahlen, was sowohl den Gewinn als auch den Marktanteil gesteigert hätte."
+                }
+            },
+            {
+                description: "Eine neue Technologie ermöglicht personalisierte Taschen. Wie nutzen wir diese Chance? 🎨",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: 4, profit: 150 }, correct: true },
+                    { text: "Preise senken", effect: { marketShare: 7, profit: -100 }, correct: false },
+                    { text: "Produktionsmenge senken", effect: { marketShare: -3, profit: 50 }, correct: false }
+                ],
+                explanation: {
+                    correct: "Richtig! 👍 Personalisierung ist ein Mehrwert für den Kunden. Wir können höhere Preise für diesen zusätzlichen Service verlangen, was sowohl den Gewinn als auch den Marktanteil steigern kann.",
+                    wrong: "Leider falsch. 👎 Personalisierung ist ein Mehrwert für den Kunden. Wir hätten höhere Preise für diesen zusätzlichen Service verlangen können, was sowohl den Gewinn als auch den Marktanteil gesteigert hätte."
+                }
+            },
+            {
+                description: "Ein Handelskonflikt erschwert den Zugang zu wichtigen Märkten. Was tun wir? 🌐",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: -5, profit: 30 }, correct: false },
+                    { text: "Preise senken", effect: { marketShare: 3, profit: -50 }, correct: true },
+                    { text: "Produktionsmenge erhöhen", effect: { marketShare: -1, profit: -100 }, correct: false }
+                ],
+                explanation: {
+                    correct: "Richtig! 👍 In schwierigen Märkten können niedrigere Preise helfen, Marktanteile zu halten oder sogar zu gewinnen, auch wenn dies kurzfristig den Gewinn reduziert.",
+                    wrong: "Leider falsch. 👎 In schwierigen Märkten hätten niedrigere Preise geholfen, Marktanteile zu halten oder sogar zu gewinnen, auch wenn dies kurzfristig den Gewinn reduziert hätte."
+                }
+            },
+            {
+                description: "Soziale Medien bieten neue Marketingmöglichkeiten. Wie nutzen wir sie? 📱",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: -2, profit: 50 }, correct: false },
+                    { text: "Preise senken", effect: { marketShare: 5, profit: -50 }, correct: false },
+                    { text: "Produktionsmenge erhöhen", effect: { marketShare: 3, profit: 100 }, correct: true }
+                ],
+               explanation: {
+                    correct: "Richtig! 👍 Neue Marketingkanäle können die Nachfrage steigern. Eine Erhöhung der Produktionsmenge ermöglicht es uns, diese zusätzliche Nachfrage zu bedienen und sowohl Marktanteil als auch Gewinn zu steigern.",
+                    wrong: "Leider falsch. 👎 Neue Marketingkanäle können die Nachfrage steigern. Eine Erhöhung der Produktionsmenge wäre nötig gewesen, um diese zusätzliche Nachfrage zu bedienen und sowohl Marktanteil als auch Gewinn zu steigern."
+                }
+            },
+            {
+                description: "Die Konkurrenz von Brada wird aggressiver. Wie reagieren wir? 🥊",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: -7, profit: 50 }, correct: false },
+                    { text: "Preise senken", effect: { marketShare: 5, profit: -100 }, correct: true },
+                    { text: "Produktionsmenge senken", effect: { marketShare: -5, profit: 30 }, correct: false }
+                ],
+                explanation: {
+                    correct: "Richtig! 👍 Bei aggressiver Konkurrenz können Preissenkungen helfen, Marktanteile zu verteidigen und Kunden zu halten, auch wenn dies kurzfristig den Gewinn reduziert.",
+                    wrong: "Leider falsch. 👎 Bei aggressiver Konkurrenz hätten Preissenkungen geholfen, Marktanteile zu verteidigen und Kunden zu halten, auch wenn dies kurzfristig den Gewinn reduziert hätte."
+                }
+            },
+            {
+                description: "Eine unerwartete Qualitätssteigerung in der Produktion ermöglicht höherwertige Produkte. Wie nutzen wir das? ✨",
+                options: [
+                    { text: "Preise erhöhen", effect: { marketShare: 2, profit: 150 }, correct: true },
+                    { text: "Preise senken", effect: { marketShare: 5, profit: -50 }, correct: false },
+                    { text: "Produktionsmenge erhöhen", effect: { marketShare: 3, profit: 50 }, correct: false }
+                ],
+                explanation: {
+                    correct: "Richtig! 👍 Höhere Qualität rechtfertigt höhere Preise. Wir können den Mehrwert an die Kunden weitergeben und gleichzeitig unseren Gewinn steigern, ohne den Marktanteil zu gefährden.",
+                    wrong: "Leider falsch. 👎 Höhere Qualität hätte höhere Preise gerechtfertigt. Wir hätten den Mehrwert an die Kunden weitergeben und gleichzeitig unseren Gewinn steigern können, ohne den Marktanteil zu gefährden."
+                }
+            }
+        ];
+
+        // Funktion zum Mischen der Szenarien
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Spiel initialisieren
+        function initGame() {
+            currentRound = 0;
+            score = 0;
+            flutschisMarketShare = 50;
+            bradasMarketShare = 50;
+            flutschisProfit = 1000;
+            profitHistory = [1000];
+            marketShareHistory = [50];
+            shuffleArray(scenarios);
+            updateScore();
+            showIntro();
+        }
+
+        // Einführung anzeigen
+        function showIntro() {
+            const introText = `
+                <h2>Willkommen bei Flutschi's Wirtschaftsabenteuer! 🎉</h2>
+                <p>Du übernimmst die Rolle des CEO von Flutschi, einem Luxusgüterkonzern, der sich auf hochwertige Ledertaschen spezialisiert hat. Dein Ziel ist es, den Gewinn und Marktanteil deines Unternehmens zu maximieren, während du gegen deinen Konkurrenten Brada antrittst.</p>
+                <p>In den nächsten 12 Runden wirst du mit verschiedenen Herausforderungen konfrontiert. Deine Entscheidungen werden den Verlauf des Spiels beeinflussen und sich auf deinen Marktanteil und Gewinn auswirken. Wähle weise und beobachte, wie sich der Markt verändert!</p>
+                <button onclick="startGame()">Spiel starten 🚀</button>
+            `;
+            document.getElementById('intro').innerHTML = introText;
+            document.getElementById('decision-area').innerHTML = '';
+            document.getElementById('explanation-area').innerHTML = '';
+            document.getElementById('next-round').style.display = 'none';
+            document.getElementById('restart').style.display = 'none';
+            document.getElementById('chart-container').style.display = 'none';
+            document.getElementById('profit-container').style.display = 'none';
+        }
+
+        // Spiel starten
+        function startGame() {
+            document.getElementById('intro').innerHTML = '';
+            document.getElementById('chart-container').style.display = 'block';
+            document.getElementById('profit-container').style.display = 'block';
+            createChart();
+            createProfitChart();
+            nextRound();
+        }
+
+        // Nächste Runde
+        function nextRound() {
+            if (currentRound < scenarios.length) {
+                const scenario = scenarios[currentRound];
+                document.getElementById('decision-area').innerHTML = `
+                    <h3>Runde ${currentRound + 1}</h3>
+                    <p>${scenario.description}</p>
+                    ${scenario.options.map((option, index) => `
+                        <button onclick="makeDecision(${index})">${option.text}</button>
+                    `).join('')}
+                `;
+                document.getElementById('explanation-area').innerHTML = '';
+                document.getElementById('next-round').style.display = 'none';
+            } else {
+                endGame();
+            }
+        }
+
+        // Entscheidung treffen
+        function makeDecision(optionIndex) {
+            const scenario = scenarios[currentRound];
+            const decision = scenario.options[optionIndex];
+            
+            flutschisMarketShare += decision.effect.marketShare;
+            bradasMarketShare -= decision.effect.marketShare;
+            flutschisProfit += decision.effect.profit;
+            
+            // Ensure market shares are between 0 and 100
+            flutschisMarketShare = Math.max(0, Math.min(flutschisMarketShare, 100));
+            bradasMarketShare = Math.max(0, Math.min(bradasMarketShare, 100));
+            
+            // Normalize market shares to always sum up to 100
+            const totalMarketShare = flutschisMarketShare + bradasMarketShare;
+            flutschisMarketShare = (flutschisMarketShare / totalMarketShare) * 100;
+            bradasMarketShare = (bradasMarketShare / totalMarketShare) * 100;
+            
+            profitHistory.push(flutschisProfit);
+            marketShareHistory.push(flutschisMarketShare);
+            
+            updateChart();
+            updateProfitChart();
+            
+            let explanation = decision.correct ? scenario.explanation.correct : scenario.explanation.wrong;
+            let points = decision.correct ? 10 : 0;
+            score += points;
+            
+            document.getElementById('explanation-area').innerHTML = `
+                <p>${explanation}</p>
+                <p>Punkte für diese Runde: ${points}</p>
+                <p class="animated">Marktanteil: ${flutschisMarketShare.toFixed(2)}% (${decision.effect.marketShare > 0 ? '+' : ''}${decision.effect.marketShare}%)</p>
+                <p class="animated">Gewinn: ${flutschisProfit}M € (${decision.effect.profit > 0 ? '+' : ''}${decision.effect.profit}M €)</p>
+            `;
+            
+            document.getElementById('decision-area').innerHTML = '';
+            document.getElementById('next-round').style.display = 'inline-block';
+            updateScore();
+            
+            currentRound++;
+        }
+
+        // Punktestand aktualisieren
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+
+        // Spiel beenden
+        function endGame() {
+            const maxPossibleMarketShare = 100;
+            const maxPossibleProfit = 5000; // Angenommen, dies ist der höchstmögliche Gewinn
+            
+            const marketShareScore = (flutschisMarketShare / maxPossibleMarketShare) * 50;
+            const profitScore = (flutschisProfit / maxPossibleProfit) * 50;
+            
+            const finalScore = Math.round(marketShareScore + profitScore);
+            
+            if (finalScore > highScore) {
+                highScore = finalScore;
+                localStorage.setItem('highScore', highScore);
+            }
+            
+            let feedback = '';
+            if (finalScore > 80) {
+                feedback = "Hervorragend! 🏆 Du bist ein Meister der Wirtschaft!";
+            } else if (finalScore > 60) {
+                feedback = "Gut gemacht! 👍 Du hast solide wirtschaftliche Entscheidungen getroffen.";
+            } else if (finalScore > 40) {
+                feedback = "Nicht schlecht, aber es gibt noch Raum für Verbesserung. 📈 Analysiere den Markt genauer.";
+            } else {
+                feedback = "Du hast noch viel zu lernen. 📚 Versuche, die Auswirkungen deiner Entscheidungen besser vorherzusehen.";
+            }
+            
+            document.getElementById('game-area').innerHTML = `
+                <h2>Spiel beendet! 🎮</h2>
+                <p>Deine Endpunktzahl: ${finalScore}</p>
+                <p>Dein Highscore: ${highScore}</p>
+                <p>Flutschi's finaler Marktanteil: ${flutschisMarketShare.toFixed(2)}%</p>
+                <p>Flutschi's finaler Gewinn: ${flutschisProfit}M €</p>
+                <p>${feedback}</p>
+            `;
+            
+            document.getElementById('next-round').style.display = 'none';
+            document.getElementById('restart').style.display = 'inline-block';
+        }
+
+        // Spiel neu starten
+        document.getElementById('restart').addEventListener('click', initGame);
+
+        // Nächste Runde starten
+        document.getElementById('next-round').addEventListener('click', nextRound);
+
+        // Chart erstellen
+        function createChart() {
+            const ctx = document.getElementById('marketShareChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Start', ...Array(marketShareHistory.length - 1).fill('').map((_, i) => `Runde ${i + 1}`)],
+                    datasets: [{
+                        label: 'Flutschi Marktanteil (%)',
+                        data: marketShareHistory,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Chart aktualisieren
+        function updateChart() {
+            chart.data.labels = ['Start', ...Array(marketShareHistory.length - 1).fill('').map((_, i) => `Runde ${i + 1}`)];
+            chart.data.datasets[0].data = marketShareHistory;
+            chart.update();
+        }
+
+        // Gewinn-Chart erstellen
+        function createProfitChart() {
+            const ctx = document.getElementById('profitChart').getContext('2d');
+            profitChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Start', ...Array(profitHistory.length - 1).fill('').map((_, i) => `Runde ${i + 1}`)],
+                    datasets: [{
+                        label: 'Gewinn (Millionen €)',
+                        data: profitHistory,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Gewinn-Chart aktualisieren
+        function updateProfitChart() {
+            profitChart.data.labels = ['Start', ...Array(profitHistory.length - 1).fill('').map((_, i) => `Runde ${i + 1}`)];
+            profitChart.data.datasets[0].data = profitHistory;
+            profitChart.update();
+        }
+
+        // Spiel initialisieren
+        initGame();
+    </script>
+</body>
+</html>
