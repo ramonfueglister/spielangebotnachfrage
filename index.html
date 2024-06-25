@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flutschi's Wirtschaftsabenteuer</title>
+    <title>Be the Boss</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -66,7 +66,7 @@
 </head>
 <body>
     <div id="game-container">
-        <h1>Flutschi's Wirtschaftsabenteuer 💼</h1>
+        <h1>Be the Boss 💼</h1>
         <div id="score-display">Punktzahl: <span id="score">0</span></div>
         <div id="game-area">
             <div id="intro">
@@ -104,7 +104,7 @@
         // Spielszenarien
         const scenarios = [
             {
-                description: "Eine große Flutwelle hat die Fabriken in China überschwemmt, was zu einer Verknappung der Ledertaschen führt. Was sollen wir tun? 🌊",
+                description: "Eine grosse Flutwelle hat die Fabriken in China überschwemmt, was zu einer Verknappung von Ledertaschen führt. Was sollen wir als erstes tun? 🌊",
                 options: [
                     { text: "Preise erhöhen", effect: { marketShare: -2, profit: 100 }, correct: true },
                     { text: "Preise senken", effect: { marketShare: 5, profit: -100 }, correct: false },
@@ -140,7 +140,7 @@
                 }
             },
             {
-                description: "Eine neue Umweltregulierung erschwert die Produktion. Was ist unsere Strategie? 🌿",
+                description: "Ein neues Umweltgesetz erschwert die Produktion. Was ist unsere Strategie? 🌿",
                 options: [
                     { text: "Preise erhöhen", effect: { marketShare: -2, profit: 30 }, correct: true },
                     { text: "Preise senken", effect: { marketShare: 3, profit: -100 }, correct: false },
@@ -152,7 +152,7 @@
                 }
             },
             {
-                description: "Ein neuer Markt in Südamerika öffnet sich. Wie reagieren wir? 🌎",
+                description: "Zölle werden in Brasilien auf Lederwaren gesenkt. Ein neuer Markt in Südamerika öffnet sich. Wie reagieren wir? 🌎",
                 options: [
                     { text: "Preise erhöhen", effect: { marketShare: -5, profit: 50 }, correct: false },
                     { text: "Preise senken", effect: { marketShare: 7, profit: -50 }, correct: true },
@@ -176,7 +176,7 @@
                 }
             },
             {
-                description: "Ein Trend zu nachhaltiger Mode zeichnet sich ab. Wie positionieren wir uns? 🌱",
+                description: "Ein Trend zu nachhaltiger und umweltfreundlicher Mode zeichnet sich ab. Unsere Taschen halten häufig ein Leben lang. Wie positionieren wir uns? 🌱",
                 options: [
                     { text: "Preise erhöhen", effect: { marketShare: 3, profit: 100 }, correct: true },
                     { text: "Preise senken", effect: { marketShare: 5, profit: -100 }, correct: false },
@@ -200,7 +200,7 @@
                 }
             },
             {
-                description: "Ein Handelskonflikt erschwert den Zugang zu wichtigen Märkten. Was tun wir? 🌐",
+                description: "Ein Handelskonflikt zwischen den USA und China erschwert den Zugang zu unseren wichtigen Märkten. Was tun wir? 🌐",
                 options: [
                     { text: "Preise erhöhen", effect: { marketShare: -5, profit: 30 }, correct: false },
                     { text: "Preise senken", effect: { marketShare: 3, profit: -50 }, correct: true },
@@ -212,7 +212,7 @@
                 }
             },
             {
-                description: "Soziale Medien bieten neue Marketingmöglichkeiten. Wie nutzen wir sie? 📱",
+                description: "Soziale Medien bieten neue Marketingmöglichkeiten. Die Fans lieben unsere Taschen auf Insta. Was machen wir? 📱",
                 options: [
                     { text: "Preise erhöhen", effect: { marketShare: -2, profit: 50 }, correct: false },
                     { text: "Preise senken", effect: { marketShare: 5, profit: -50 }, correct: false },
@@ -223,8 +223,8 @@
                     wrong: "Leider falsch. 👎 Neue Marketingkanäle können die Nachfrage steigern. Eine Erhöhung der Produktionsmenge wäre nötig gewesen, um diese zusätzliche Nachfrage zu bedienen und sowohl Marktanteil als auch Gewinn zu steigern."
                 }
             },
-            {
-                description: "Die Konkurrenz von Brada wird aggressiver. Wie reagieren wir? 🥊",
+{
+                description: "Die Konkurrenz von Brada wird aggressiver und verbreitert ihre Produktsortiment. Wie reagieren wir? 🥊",
                 options: [
                     { text: "Preise erhöhen", effect: { marketShare: -7, profit: 50 }, correct: false },
                     { text: "Preise senken", effect: { marketShare: 5, profit: -100 }, correct: true },
@@ -257,35 +257,16 @@
             }
         }
 
-        // Spiel initialisieren
-        function initGame() {
-            currentRound = 0;
-            score = 0;
-            flutschisMarketShare = 50;
-            bradasMarketShare = 50;
-            flutschisProfit = 1000;
-            profitHistory = [1000];
-            marketShareHistory = [50];
-            shuffleArray(scenarios);
-            updateScore();
-            showIntro();
-        }
-
         // Einführung anzeigen
         function showIntro() {
             const introText = `
-                <h2>Willkommen bei Flutschi's Wirtschaftsabenteuer! 🎉</h2>
-                <p>Du übernimmst die Rolle des CEO von Flutschi, einem Luxusgüterkonzern, der sich auf hochwertige Ledertaschen spezialisiert hat. Dein Ziel ist es, den Gewinn und Marktanteil deines Unternehmens zu maximieren, während du gegen deinen Konkurrenten Brada antrittst.</p>
-                <p>In den nächsten 12 Runden wirst du mit verschiedenen Herausforderungen konfrontiert. Deine Entscheidungen werden den Verlauf des Spiels beeinflussen und sich auf deinen Marktanteil und Gewinn auswirken. Wähle weise und beobachte, wie sich der Markt verändert!</p>
+                <h2>Willkommen beim "be the Boss" Game 🎉</h2>
+                <p>Sie übernehmen die Rolle des CEO von Flutschi, einem Luxusgüterkonzern, der sich auf hochwertige Ledertaschen spezialisiert hat. Ihr Ziel ist es, den Gewinn und Marktanteil des Unternehmens zu maximieren, während Sie gegen den Konkurrenten Brada antreten.</p>
+                <p>In den nächsten 12 Runden werden Sie mit verschiedenen Herausforderungen konfrontiert. Ihre Entscheidungen werden den Verlauf des Spiels beeinflussen und sich auf den Marktanteil und Gewinn auswirken. 
+Marktanteil bedeutet, wie viel Prozent vom gesamten Markt (z.B. vom ganzen Luxustaschenmarkt ein Unternehmen hat, und Gewinn ist das Geld, das übrig bleibt, nachdem alle Kosten bezahlt wurden. Wählen Sie weise und beobachten Sie, wie sich der Markt verändert!</p>
                 <button onclick="startGame()">Spiel starten 🚀</button>
             `;
             document.getElementById('intro').innerHTML = introText;
-            document.getElementById('decision-area').innerHTML = '';
-            document.getElementById('explanation-area').innerHTML = '';
-            document.getElementById('next-round').style.display = 'none';
-            document.getElementById('restart').style.display = 'none';
-            document.getElementById('chart-container').style.display = 'none';
-            document.getElementById('profit-container').style.display = 'none';
         }
 
         // Spiel starten
@@ -380,13 +361,13 @@
             
             let feedback = '';
             if (finalScore > 80) {
-                feedback = "Hervorragend! 🏆 Du bist ein Meister der Wirtschaft!";
+                feedback = "Hervorragend! 🏆 Sie sind ein Meister der Wirtschaft!";
             } else if (finalScore > 60) {
-                feedback = "Gut gemacht! 👍 Du hast solide wirtschaftliche Entscheidungen getroffen.";
+                feedback = "Gut gemacht! 👍 Sie haben solide wirtschaftliche Entscheidungen getroffen.";
             } else if (finalScore > 40) {
-                feedback = "Nicht schlecht, aber es gibt noch Raum für Verbesserung. 📈 Analysiere den Markt genauer.";
+                feedback = "Nicht schlecht, aber es gibt noch Raum für Verbesserung. 📈 Analysieren Sie den Markt genauer.";
             } else {
-                feedback = "Du hast noch viel zu lernen. 📚 Versuche, die Auswirkungen deiner Entscheidungen besser vorherzusehen.";
+                feedback = "Sie haben noch viel zu lernen. 📚 Versuchen Sie, die Auswirkungen ihrer Entscheidungen besser vorherzusehen.";
             }
             
             document.getElementById('game-area').innerHTML = `
@@ -401,12 +382,6 @@
             document.getElementById('next-round').style.display = 'none';
             document.getElementById('restart').style.display = 'inline-block';
         }
-
-        // Spiel neu starten
-        document.getElementById('restart').addEventListener('click', initGame);
-
-        // Nächste Runde starten
-        document.getElementById('next-round').addEventListener('click', nextRound);
 
         // Chart erstellen
         function createChart() {
@@ -479,8 +454,43 @@
             profitChart.update();
         }
 
+        // Event-Listener für den Neustart-Button
+        document.getElementById('restart').addEventListener('click', function() {
+            // Zurücksetzen aller Spielvariablen
+            currentRound = 0;
+            score = 0;
+            flutschisMarketShare = 50;
+            bradasMarketShare = 50;
+            flutschisProfit = 1000;
+            profitHistory = [1000];
+            marketShareHistory = [50];
+
+            // Aktualisieren der Anzeige
+            updateScore();
+
+            // Charts zurücksetzen
+            if (chart) chart.destroy();
+            if (profitChart) profitChart.destroy();
+
+            // Spielfeld-Elemente zurücksetzen
+            document.getElementById('game-area').innerHTML = '<div id="intro"></div><div id="chart-container"><canvas id="marketShareChart"></canvas></div><div id="profit-container"><canvas id="profitChart"></canvas></div><div id="decision-area"></div><div id="explanation-area"></div>';
+            document.getElementById('chart-container').style.display = 'none';
+            document.getElementById('profit-container').style.display = 'none';
+            document.getElementById('next-round').style.display = 'none';
+            document.getElementById('restart').style.display = 'none';
+
+            // Szenarien neu mischen
+            shuffleArray(scenarios);
+
+            // Spiel neu starten
+            showIntro();
+        });
+
+        // Event-Listener für den Nächste-Runde-Button
+        document.getElementById('next-round').addEventListener('click', nextRound);
+
         // Spiel initialisieren
-        initGame();
+        showIntro();
     </script>
 </body>
 </html>
