@@ -1,0 +1,21 @@
+Hier ist der Prompt:
+
+Aufgabe: Ich möchte ein interaktives Lernspiel über 12 Runden erstellen. Das Spiel soll auf Github hochgeladen werden können und dort gehostet werden können.
+
+1. Zielgruppe: 16 jährige Lernende einer Highschool im Fach Wirtschaft
+
+2. Ziel des Spiels: Die Lernende  liest eine kurze Einführung in das Spiel am Anfang. Sie übernehmen die Rolle eines fiktiven Luxusgüterkonzerns  mit dem Namen Flutschi.  Sie spielen gegen einen bösen Konkurrenten namens Brada.
+
+3. Die Lernenden müssen über die 12 Runden jeweils Entscheidungen treffen, welche den Gewinn und Marktanteil des Unternehmens beeinflussen. Bedenke, dass die Maximierung von Gewinn und Marktanteil manchmal Trade-Offs erfordern. Es geht im Spiel nur um ein einzelnes Produkt, eine teure Ledertasche.  Die Entscheidungen sollen im Stil sein: "Eine grosse Flutwelle hat die Fabriken in China überschwemmt. Glücklicherweise ist unser Standort in Taiwan nicht betroffen. Was sollen wir tun? "Produktionsmenge der Flutschi-Tasche erhöhen" "Keine Massnahmen ergreifen."  "Produktionsmenge der Flutschi-Tasche senken."
+
+4. Die Entscheidungen orientieren sich ausschliesslich am Gesetz von Angebot und Nachfrage. Eine Grafik wird dynamisch nach jeder Runde aktualisiert und die Angebots/nachfragekurve wird grafisch dargestellt. Die Entscheidungen von früheren Runden müssen dabei in die Grafik einfliessen. Die Lernenden müssen lernen am richtigen Zeitpunkt zu investieren oder Geschäftsentscheidungen zu machen. So macht es z.B. keinen Sinn die Kosten zu senken, wenn das Produkt sehr begehrt ist und die Nachfrage sehr hoch ist. Die Entscheidungen sollen nicht extrem schwierig sein (Niveau: Highschool) aber dennoch zum nachdenken anregen. Es gibt immer nur eine richtige und klar bestmögliche Antwort. Die Entscheidungen werden bei jedem Start des Spiels neu gemischt, so dass das Spiel niemals den gleichen Ablauf der Entscheidungen hat.
+
+5. Nach dem Abschluss der Runde wird die Entscheidung kurz erklärt und wieso es eine gute oder schlecchte Entscheidung war. Nach dem drücken eines weiter Knopfes kommt die nächste Runde.
+
+6. Am Ende aller Runden gibt es einen Highscore und eine Rückmeldung was gut und schlecht gemacht wurde.
+
+7. Mit dem Drücken eines Knopfes "Wiederholen" kann das Spiel erneut gespielt werden, der Highscore wird dabei gespeichert. Die Maximalpunktzahl ist 100.
+
+8. Das Spiel muss komplett als eine einzige interaktive HTML Datei ausgegeben sein . Das Spiel ist  komplett funktionsfähig und grafisch äusserst aufwändig gestaltet. Es ist kein Prototyp und alle Funktionen müssen vollständig ausgegeben werden. Ich brauche den kompletten HTML Code mit allen Features.
+
+8. let's verify this problem step by step.
